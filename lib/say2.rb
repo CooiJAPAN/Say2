@@ -1,4 +1,3 @@
-require_relative 'memory_array'
 #!/usr/bin/env ruby
 #
 # Ook! language interpreter - http://www.dangermouse.net/esoteric/ook.html
@@ -10,16 +9,18 @@ require_relative 'memory_array'
 #
 # As a program: ook file.ook [-v]
 
-class Ook
-  VERSION = '0.1.3'
+require_relative 'memory_array'
 
-  OokError = Class.new(StandardError)
-  UnmatchedStartLoop = Class.new(OokError)
-  UnmatchedEndLoop = Class.new(OokError)
-  OddNumberOfOoks = Class.new(OokError)
-  EndOfInstructions = Class.new(OokError)
+class Say2
+  VERSION = '0.1.3-say'
 
-  attr_reader :ooks, :mem, :pc, :loops
+  Say2Error          = Class.new(StandardError)
+  UnmatchedStartLoop = Class.new(Say2Error)
+  UnmatchedEndLoop   = Class.new(Say2Error)
+  OddNumberOfSay2s   = Class.new(Say2Error)
+  EndOfInstructions  = Class.new(Say2Error)
+
+  attr_reader :say2s, :mem, :pc, :loops
   attr_writer :verbose
   attr_accessor :ifd, :ofd, :code
 
@@ -74,43 +75,46 @@ class Ook
   end
 
   protected
+  # Ook. VPS
+  # Ook! VPN
+  # Ook? CMS
 
-  def ookd_ookq
+  def vps_cms
     verbose '.? move pointer forward' do
       @mem.next
     end
   end
 
-  def ookq_ookd
+  def cms_vps
     verbose '?. move pointer backward' do
       @mem.prev
     end
   end
 
-  def ookd_ookd
+  def vps_vps
     verbose '.. increment pointer cell' do
       @mem.increment
     end
   end
 
-  def ookx_ookx
+  def vpn_vpn
     verbose '!! decrement pointer cell' do
       @mem.decrement
     end
   end
 
-  def ookd_ookx
+  def vps_vpn
     verbose '.! now reading input'
     @mem.put(@ifd.read(1))
   end
 
-  def ookx_ookd
+  def vpn_vps
     verbose "!. now writing =>\t [", "print"
     @ofd.write @mem.get.chr
     verbose " (#{@mem.get})]"
   end
 
-  def ookx_ookq
+  def vpn_cms
     verbose '!? evaluating start loop'
     if @mem.get == 0
       verbose "loop skipped: #@pc"
@@ -121,7 +125,7 @@ class Ook
     end
   end
 
-  def ookq_ookx
+  def cms_vpn
     verbose '?! evaluating end loop'
     raise UnmatchedEndLoop unless @loops.last
     @mem.get != 0 ? @pc = @loops.last : @loops.pop
@@ -135,22 +139,22 @@ class Ook
       @pc += 1
       insn = next_insn
       raise UnmatchedStartLoop if insn.empty?
-      if insn == 'ookq_ookx'
+      if insn == 'cms_vpn'
         nesting -= 1
         break if nesting == 0
-      elsif insn == 'ookx_ookq'
+      elsif insn == 'vpn_cms'
         nesting += 1
       end
     end
   end
 
   def parse
-    @ooks = @code.scan(/\s*(Ook[!?\.])\s*/).flatten
-    raise OddNumberOfOoks unless @ooks.size % 2 == 0
+    @say2s = @code.scan(/\s*(CMS|VPS|VPN)\s*/).flatten
+    raise OddNumberOfSay2s unless @say2s.size % 2 == 0
   end
 
   def next_insn
-    @ooks.slice(@pc*2, 2).join('_').downcase.gsub('!', 'x').gsub('?','q').gsub('.','d')
+    @say2s.slice(@pc*2, 2).join('_').downcase
   rescue NoMethodError  # happens when last instruction is an end loop
     ''
   end
@@ -172,11 +176,11 @@ end
 
 if __FILE__ == $0
   unless ARGV[0].nil?
-    ook = Ook.new(File.read ARGV[0])
-    ook.verbose = true if ARGV[1]
-    ook.run
+    say2 = Say2.new(File.read ARGV[0])
+    say2.verbose = true if ARGV[1]
+    say2.run
   else
-    STDERR.puts "Unleashed's Ook! interpreter #{Ook::VERSION}\n\nUsage: #{File.basename $0} <file> [-v]"
+    STDERR.puts "Unleashed's Say2! interpreter #{Say2::VERSION}\n\nUsage: #{File.basename $0} <file> [-v]"
   end
 end
 
